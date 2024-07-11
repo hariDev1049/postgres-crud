@@ -38,22 +38,29 @@ const index = () => {
     return 'Loading..!';
   }
 
-  const handleDelete = (e: any) => {
+  const handleDelete = (id: any) => {
     async function deleteTodo() {
       try {
-        const response = await fetch('/api/deleteTodos', {
+        const response = await fetch(`/api/deleteTodo`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ id }),
         });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const newTodo = await response.json();
       } catch (error) {}
     }
 
     deleteTodo();
   };
 
-  const handleEdit = () => {};
+  const handleEdit = (id: any) => {};
 
   return (
     <div>
@@ -65,10 +72,16 @@ const index = () => {
           >
             {item.todo}{' '}
             <div className="flex gap-3">
-              <button className="bg-red-500 p-2 rounded" onClick={handleDelete}>
+              <button
+                className="bg-red-500 p-2 rounded"
+                onClick={() => handleDelete(item.id)}
+              >
                 Delete
               </button>{' '}
-              <button className="bg-green-500 p-2 rounded" onClick={handleEdit}>
+              <button
+                className="bg-green-500 p-2 rounded"
+                onClick={() => handleEdit(item.id)}
+              >
                 Edit
               </button>
             </div>

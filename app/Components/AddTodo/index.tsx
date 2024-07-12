@@ -1,30 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function AddTodo() {
+export default function AddTodo({ onAddTodo, onUpdateTodo, editItem }) {
   const [todo, setTodo] = useState('');
   const [date, setDate] = useState('');
 
-  const handleClick = async (e: any) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('/api/addTodo', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ todo, date }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const newTodo = await response.json();
-
+  useEffect(() => {
+    if (editItem) {
+      setTodo(editItem.todo);
+      setDate(editItem.due_date);
+    } else {
       resetForm();
-    } catch (error) {
-      console.error('Error adding todo:', error);
     }
+  }, [editItem]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (editItem) {
+      await onUpdateTodo(editItem.id, todo, date);
+    } else {
+      await onAddTodo(todo, date);
+    }
+    resetForm();
   };
 
   const resetForm = () => {
@@ -34,7 +30,7 @@ export default function AddTodo() {
 
   return (
     <div className="p-12">
-      <form className="flex flex-col gap-8">
+      <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
         <div className="flex gap-4">
           <input
             type="text"
@@ -50,11 +46,8 @@ export default function AddTodo() {
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
-        <button
-          className="w-full bg-purple-900 p-3 rounded-md"
-          onClick={handleClick}
-        >
-          Add Todo
+        <button className="w-full bg-purple-900 p-3 rounded-md" type="submit">
+          {editItem ? 'Update Todo' : 'Add Todo'}
         </button>
       </form>
     </div>
